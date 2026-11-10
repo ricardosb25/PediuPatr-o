@@ -1,0 +1,21 @@
+<!DOCTYPE html><html xmlns:th="http://www.thymeleaf.org"><body><div th:fragment="content">
+<h2>Pedidos</h2><div id="feedback-pedido" class="alert alert-danger" hidden role="alert"></div>
+<form id="novo-pedido" class="card card-body mb-4" th:if="${#authorization.expression('hasAnyRole(''ATENDENTE'',''GERENTE'')')}">
+<h3>Registrar pedido</h3><label>Cliente<select id="cliente-pedido" class="form-select" required><option value="">Selecione</option><option th:each="cliente : ${clientes}" th:value="${cliente.id}" th:text="${cliente.nome}"></option></select></label>
+<div id="itens-pedido"><div class="item-pedido d-flex gap-2 my-2"><select class="produto-pedido form-select" required><option value="">Produto</option><option th:each="produto : ${produtos}" th:if="${produto.ativo}" th:value="${produto.id}" th:text="${produto.nome + ' — R$ ' + produto.preco}"></option></select><input class="quantidade-pedido form-control" type="number" min="1" max="1000" value="1" aria-label="Quantidade" required></div></div>
+<div><button class="btn btn-outline-secondary" type="button" onclick="adicionarItemPedido()">Adicionar item</button> <button class="btn btn-primary" type="submit">Registrar</button></div>
+</form>
+<div th:each="pedido : ${pedidos}" class="card card-body mb-3">
+<h3 class="h5">Pedido <span th:text="${pedido.id}"></span> — <span th:text="${pedido.status}"></span></h3>
+<p>Cliente: <span th:text="${pedido.clienteId}"></span></p>
+<ul><li th:each="item : ${pedido.itens}"><span th:text="${item.quantidade}"></span> × <span th:text="${item.nome}"></span> — R$ <span th:text="${item.precoUnitario}"></span></li></ul>
+<p>Subtotal: R$ <span th:text="${pedido.subtotal}"></span> | Desconto: <span th:text="${pedido.descontoPercentual}"></span>% | Total: R$ <strong th:text="${pedido.valorTotal}"></strong></p>
+<p>Entrada: <span th:text="${pedido.dataEntrada}"></span> por <span th:text="${pedido.responsavelRegistro}"></span><br>Saída: <span th:text="${pedido.dataSaida}"></span> por <span th:text="${pedido.responsavelSaida}"></span></p>
+<p th:if="${pedido.justificativaCancelamento}" th:text="${pedido.justificativaCancelamento}"></p>
+<div th:if="${#authorization.expression('hasRole(''GERENTE'')')}" th:attr="data-pedido=${pedido.id}">
+<button th:if="${pedido.status != null and pedido.status.name() == 'RECEBIDO'}" class="btn btn-primary" onclick="alterarStatusPedido(this, 'EM_PREPARACAO')">Enviar à cozinha</button>
+<button th:if="${pedido.status != null and pedido.status.name() == 'EM_PREPARACAO'}" class="btn btn-primary" onclick="alterarStatusPedido(this, 'PRONTO')">Marcar pronto</button>
+<th:block th:if="${pedido.status != null and pedido.status.name() == 'PRONTO'}"><button class="btn btn-primary" onclick="alterarStatusPedido(this, 'SAIU_PARA_ENTREGA')">Saiu para entrega</button> <button class="btn btn-primary" onclick="alterarStatusPedido(this, 'RETIRADO')">Retirado</button></th:block>
+<button th:if="${pedido.status != null and (pedido.status.name() == 'SAIU_PARA_ENTREGA' or pedido.status.name() == 'RETIRADO')}" class="btn btn-success" onclick="alterarStatusPedido(this, 'FINALIZADO')">Finalizar</button>
+<th:block th:if="${pedido.status != null and pedido.status.permiteAjustes()}"><button class="btn btn-outline-primary" onclick="descontarPedido(this)">Desconto</button> <button class="btn btn-outline-danger" onclick="cancelarPedido(this)">Cancelar</button></th:block>
+</div></div><script th:src="@{/js/pedidos.js}"></script></div></body></html>

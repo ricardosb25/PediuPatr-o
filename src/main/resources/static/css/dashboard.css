@@ -1,0 +1,92 @@
+.dashboard-page .card {
+    box-shadow: none;
+    border: 1px solid #dee2e6;
+}
+
+.dashboard-page .card-header {
+    background: #fff;
+}
+
+.dashboard-page article.card {
+    height: calc(100% - 1rem);
+}
+
+.sales-chart,
+.status-chart {
+    position: relative;
+    height: 250px;
+}
+
+.status-chart {
+    height: 160px;
+}
+
+.sales-chart canvas,
+.status-chart canvas {
+    max-width: 100%;
+}
+
+.status-legend {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(135px, 1fr));
+    gap: .25rem 1rem;
+}
+
+.status-legend li {
+    display: flex;
+    align-items: center;
+    gap: .4rem;
+}
+
+.status-legend strong {
+    margin-left: auto;
+}
+
+.key-dot {
+    width: .5rem;
+    height: .5rem;
+    flex: 0 0 .5rem;
+    border-radius: 50%;
+}
+
+.daily-table {
+    max-height: 250px;
+}
+
+.dashboard-page th,
+.dashboard-page .text-right {
+    white-space: nowrap;
+}
+
+.dashboard-page [hidden] {
+    display: none !important;
+}
+
+.sidebar-collapse .sidebar-logout {
+    display: none;
+}
+
+.skip-link {
+    position: absolute;
+    top: -100px;
+    left: .5rem;
+    z-index: 2000;
+    padding: .5rem;
+    background: #fff;
+}
+
+.skip-link:focus {
+    top: .5rem;
+}
+
+.dashboard-page :focus-visible {
+    outline: 2px solid #0069d9;
+    outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .dashboard-page * {
+        transition: none !important;
+        animation: none !important;
+    }
+}

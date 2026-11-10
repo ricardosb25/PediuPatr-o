@@ -1,0 +1,34 @@
+<!DOCTYPE html><html xmlns:th="http://www.thymeleaf.org"><body><div th:fragment="content">
+<h2>Produtos</h2><p id="erro-produto" class="text-danger" role="alert"></p>
+<form id="produto-form" th:if="${#authorization.expression('hasRole(''ADMIN'')')}" class="card card-body mb-3">
+<input type="hidden" name="id"><label>Nome<input class="form-control" name="nome" required></label>
+<label>Tipo<select class="form-select" name="tipo"><option>Pizza</option><option>Bebida</option><option>Lanche</option><option>Porção</option><option>Adicional</option></select></label>
+<label>Preço<input class="form-control" name="preco" type="number" min="0" step="0.01" required></label>
+<label><input name="ativo" type="checkbox" checked> Ativo</label><button class="btn btn-primary mt-2">Salvar produto</button></form>
+<table class="table"><thead><tr><th>Nome</th><th>Tipo</th><th>Preço</th><th>Ativo</th><th>Ações</th></tr></thead><tbody>
+<tr th:each="produto : ${produtos}"><td th:text="${produto.nome}"></td><td th:text="${produto.tipo}"></td><td th:text="${produto.preco}"></td><td th:text="${produto.ativo}"></td>
+<td th:if="${#authorization.expression('hasRole(''ADMIN'')')}"><button class="btn btn-outline-primary" th:attr="data-id=${produto.id},data-nome=${produto.nome},data-tipo=${produto.tipo},data-preco=${produto.preco},data-ativo=${produto.ativo}" onclick="editarProduto(this)">Editar</button> <button class="btn btn-outline-danger" th:attr="data-id=${produto.id}" onclick="excluirProduto(this.dataset.id)">Excluir</button></td></tr></tbody></table>
+<script>
+function editarProduto(botao) {
+    const formulario = document.getElementById('produto-form');
+    for (const campo of ['id','nome','tipo','preco']) formulario.elements[campo].value = botao.dataset[campo];
+    formulario.elements.ativo.checked = botao.dataset.ativo === 'true';
+}
+async function enviarProduto(caminho, configuracao) {
+    try {
+        const resposta = await fetch(caminho, configuracao);
+        if (resposta.ok) location.reload();
+        else { const corpo = await resposta.json().catch(() => ({})); document.getElementById('erro-produto').textContent = corpo.erro || 'Operação não permitida'; }
+    } catch (falha) { document.getElementById('erro-produto').textContent = 'Falha na conexão'; }
+}
+async function excluirProduto(identificador) {
+    if (confirm('Excluir produto? Os preços dos pedidos existentes serão preservados.'))
+        enviarProduto('/api/produtos/' + encodeURIComponent(identificador), {method:'DELETE'});
+}
+document.getElementById('produto-form')?.addEventListener('submit', function salvarProduto(submissao) {
+    submissao.preventDefault();
+    const campos = this.elements;
+    const produto = {nome:campos.nome.value, tipo:campos.tipo.value, preco:Number(campos.preco.value), ativo:campos.ativo.checked};
+    enviarProduto('/api/produtos' + (campos.id.value ? '/' + encodeURIComponent(campos.id.value) : ''), {method:campos.id.value ? 'PUT' : 'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(produto)});
+});
+</script></div></body></html>

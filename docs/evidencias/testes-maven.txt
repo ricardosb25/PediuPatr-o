@@ -1,0 +1,63 @@
+EVIDÊNCIA DE TESTES — DASHBOARD PEDIU PATRÃO
+Data: 06/11/2026 (America/Sao_Paulo)
+Comando: mvn -B -o test
+JDK: 21
+Suíte Maven: 33 testes encontrados; 30 executados e aprovados; 3 desativados; 0 falhas; 0 erros.
+
+Os 3 testes desativados exigem DASHBOARD_TEST_MONGODB_URI.
+Sem conexão MongoDB real nesta execução. Mocks e dados sintéticos restritos aos testes.
+
+com.umc.pediupatrao.ClienteAuditoriaTest: testes=3, falhas=0, erros=0, desativados=0
+  PASS: impedeExclusaoDeClienteComHistorico
+  PASS: naoIncluiCredenciaisNaAuditoria
+  PASS: registraTelefoneEEnderecoComAntesEDepois
+
+com.umc.pediupatrao.DashboardControllerTest: testes=7, falhas=0, erros=0, desativados=0
+  PASS: filtrosExibemSeteEstadosELimites
+  PASS: indisponibilidadeRetorna503SemDetalhesInternos
+  PASS: exigeAutenticacaoEBloqueiaAtendente
+  PASS: filtrosInvalidosRetornam400
+  PASS: geraPreviaVisualIsolada
+  PASS: paginaUsaAdminLteEAssetsLocais
+  PASS: adminEGerenteConsultamApiSemExporDadosPessoais
+
+com.umc.pediupatrao.DashboardServiceTest: testes=6, falhas=0, erros=0, desativados=0
+  PASS: rejeitaIntervalosInvalidosAntesDeConsultarBanco
+  PASS: usaTrintaDiasEFusoDeSaoPaulo
+  PASS: sinalizaLegadosEStatusNaoReconhecidos
+  PASS: aceitaAnoBissextoEEncaminhaStatus
+  PASS: calculaTicketTaxaEPrencheDiasSemVenda
+  PASS: evitaDivisaoPorZeroSemInventarPedidos
+
+com.umc.pediupatrao.MongoDashboardIntegrationTest: testes=3, falhas=0, erros=0, desativados=3
+  SKIPPED: statusFiltraTodasAsFacetasEAceitaAliasLegado
+  SKIPPED: colecaoVaziaRetornaZeros
+  SKIPPED: agregaNoMongoRespeitandoPeriodoEstadosEValoresLegados
+
+com.umc.pediupatrao.MongoDashboardRepositoryTest: testes=2, falhas=0, erros=0, desativados=0
+  PASS: enviaPeriodoEStatusAoMongoEMapeiaDecimais
+  PASS: aceitaResultadoVazioSemEncontrarDocumentos
+
+com.umc.pediupatrao.PedidoServiceTest: testes=6, falhas=0, erros=0, desativados=0
+  PASS: descontoLimitadoESemAcumulo
+  PASS: cancelamentoExigeJustificativaEBloqueiaAlteracoes
+  PASS: exigeFluxoERegistraSaida
+  PASS: calculaPrecoDoCatalogoERegistraEntrada
+  PASS: rejeitaQuantidadesInvalidas
+  PASS: validaTodasAsTransicoes
+
+com.umc.pediupatrao.SegurancaTest: testes=4, falhas=0, erros=0, desativados=0
+  PASS: protegeCadastroEAuditoria
+  PASS: exigeCsrf
+  PASS: bloqueiaCancelamentoEStatusDeAtendente
+  PASS: somenteGerenteAplicaDescontoInclusiveContraAdmin
+
+com.umc.pediupatrao.TelasTest: testes=2, falhas=0, erros=0, desativados=0
+  PASS: renderizaPedidosParaTodosOsPerfis
+  PASS: renderizaProdutosClientesAuditoriaECadastro
+
+Verificações adicionais:
+PASS: node --check src/main/resources/static/js/dashboard.js
+PASS: node --check src/test/js/dashboard-preview-server.cjs
+Prévia visual isolada: dados sintéticos gerados pelo DashboardControllerTest.
+Conferido no navegador: desktop, tabela diária, menu móvel, ausência de rolagem horizontal, período vazio e retenção do último resultado em resposta 503 simulada.

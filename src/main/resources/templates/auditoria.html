@@ -1,0 +1,10 @@
+<!DOCTYPE html><html xmlns:th="http://www.thymeleaf.org"><body><div th:fragment="content">
+<h2>Auditoria</h2><p>Horários em UTC. Dados pessoais disponíveis exclusivamente para conferência das operações.</p>
+<article class="card card-body mb-3" th:each="registro : ${registros.content}">
+<h3 class="h5" th:text="${registro.operacao}"></h3><p><span th:text="${registro.usuario}"></span> (<span th:text="${registro.perfil}"></span>) — <span th:text="${registro.dataHora}"></span></p>
+<p><span th:text="${registro.entidade}"></span>: <span th:text="${registro.entidadeId}"></span></p>
+<table class="table"><thead><tr><th>Campo</th><th>Anterior</th><th>Novo</th></tr></thead><tbody><tr th:each="campo : ${registro.campos}"><td th:text="${campo.key}"></td><td th:text="${campo.value.anterior}"></td><td th:text="${campo.value.novo}"></td></tr></tbody></table>
+<p th:if="${registro.justificativa}" th:text="${registro.justificativa}"></p></article>
+<a th:if="${registros.hasPrevious()}" th:href="@{/auditoria(pagina=${registros.number - 1})}" class="btn btn-outline-primary">Anterior</a>
+<a th:if="${registros.hasNext()}" th:href="@{/auditoria(pagina=${registros.number + 1})}" class="btn btn-outline-primary">Próxima</a>
+</div></body></html>

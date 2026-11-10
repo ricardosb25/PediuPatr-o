@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="_csrf" th:content="${_csrf.token}">
+    <meta name="_csrf_header" th:content="${_csrf.headerName}">
+    <title>Dashboard · Pediu Patrão</title>
+    <link rel="stylesheet" th:href="@{/plugins/fontawesome-free/css/all.min.css}">
+    <link rel="stylesheet" th:href="@{/dist/css/adminlte.css}">
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+</head>
+<body class="hold-transition sidebar-mini layout-fixed dashboard-page">
+<a class="skip-link" href="#conteudo-dashboard">Pular para o conteúdo</a>
+<div class="wrapper">
+    <nav class="main-header navbar navbar-expand navbar-white navbar-light" aria-label="Navegação superior">
+        <button class="btn btn-default mr-3" data-widget="pushmenu" type="button" aria-label="Alternar menu"><i class="fas fa-bars" aria-hidden="true"></i></button>
+        <span class="text-muted d-none d-sm-inline">Pediu Patrão</span>
+        <span class="ml-auto small text-muted" th:text="${#authentication.name}"></span>
+    </nav>
+    <aside class="main-sidebar sidebar-dark-primary elevation-0">
+        <a th:href="@{/dashboard}" class="brand-link"><i class="fas fa-pizza-slice mx-2" aria-hidden="true"></i><span class="brand-text">Pediu Patrão</span></a>
+        <div class="sidebar">
+            <nav class="mt-3" aria-label="Menu principal"><ul class="nav nav-pills nav-sidebar flex-column">
+                <li class="nav-item"><a th:href="@{/dashboard}" class="nav-link active" aria-current="page"><i class="nav-icon fas fa-chart-line" aria-hidden="true"></i><p>Dashboard</p></a></li>
+                <li class="nav-item"><a th:href="@{/pedidos}" class="nav-link"><i class="nav-icon fas fa-receipt" aria-hidden="true"></i><p>Pedidos</p></a></li>
+                <li class="nav-item"><a th:href="@{/produtos}" class="nav-link"><i class="nav-icon fas fa-pizza-slice" aria-hidden="true"></i><p>Produtos</p></a></li>
+                <li class="nav-item" th:if="${#authorization.expression('hasRole(''GERENTE'')')}"><a th:href="@{/clientes}" class="nav-link"><i class="nav-icon far fa-user" aria-hidden="true"></i><p>Clientes</p></a></li>
+                <li class="nav-item"><a th:href="@{/auditoria}" class="nav-link"><i class="nav-icon fas fa-history" aria-hidden="true"></i><p>Auditoria</p></a></li>
+                <li class="nav-item" th:if="${#authorization.expression('hasRole(''ADMIN'')')}"><a th:href="@{/usuarios}" class="nav-link"><i class="nav-icon fas fa-user-shield" aria-hidden="true"></i><p>Usuários</p></a></li>
+            </ul></nav>
+            <form th:action="@{/logout}" method="post" class="sidebar-logout mt-3 px-2">
+                <button class="btn btn-outline-light btn-sm" type="submit">Sair</button>
+            </form>
+        </div>
+    </aside>
+    <main class="content-wrapper" id="conteudo-dashboard" tabindex="-1">
+        <section class="content-header">
+            <div class="container-fluid d-flex flex-wrap align-items-center justify-content-between">
+                <h1 class="mb-2">Dashboard</h1>
+                <div class="small text-muted mb-2">
+                    <label class="font-weight-normal mb-0 mr-3">
+                        <input id="atualizacao-automatica" type="checkbox" checked> Atualizar a cada 60 s
+                    </label>
+                    <span id="ultima-atualizacao" role="status">Aguardando consulta</span>
+                </div>
+            </div>
+        </section>
+        <section class="content">
+            <div class="container-fluid">
+                <form id="filtros-dashboard" class="card card-body" aria-label="Filtros do dashboard">
+                    <div class="form-row align-items-end">
+                        <div class="form-group col-sm-6 col-lg-3">
+                            <label for="inicio">Data inicial</label>
+                            <input class="form-control" id="inicio" name="inicio" type="date" min="2000-01-01" max="2100-12-31" required>
+                        </div>
+                        <div class="form-group col-sm-6 col-lg-3">
+                            <label for="fim">Data final</label>
+                            <input class="form-control" id="fim" name="fim" type="date" min="2000-01-01" max="2100-12-31" required>
+                        </div>
+                        <div class="form-group col-sm-7 col-lg-3">
+                            <label for="status">Status</label>
+                            <select class="form-control" id="status" name="status"><option value="">Todos os status</option></select>
+                        </div>
+                        <div class="form-group col-sm-5 col-lg-3">
+                            <button class="btn btn-primary" type="submit" id="aplicar-filtros">Aplicar filtros</button>
+                            <button class="btn btn-default" type="button" id="atualizar-dashboard" aria-label="Atualizar os dados">
+                                <i class="fas fa-sync-alt" aria-hidden="true"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="d-flex flex-wrap align-items-center justify-content-between">
+                        <div class="btn-group btn-group-sm" role="group" aria-label="Períodos rápidos">
+                            <button class="btn btn-default" type="button" data-periodo="1">Hoje</button>
+                            <button class="btn btn-default" type="button" data-periodo="7">7 dias</button>
+                            <button class="btn btn-default" type="button" data-periodo="30">30 dias</button>
+                        </div>
+                        <small class="text-muted">Data de entrada · Horário de Brasília</small>
+                    </div>
+                </form>
+
+                <div id="erro-dashboard" class="alert alert-danger" role="alert" hidden>
+                    <span id="mensagem-erro"></span> <a th:href="@{/login}" id="acesso-login" hidden>Entrar novamente</a>
+                </div>
+                <div id="avisos-dashboard" class="alert alert-warning" role="status" hidden></div>
+                <div id="carregamento-dashboard" class="py-4 text-center text-muted" role="status">
+                    <span class="spinner-border spinner-border-sm mr-2" aria-hidden="true"></span>Carregando dados…
+                </div>
+
+                <div id="dados-dashboard" hidden aria-busy="false">
+                    <div class="d-flex flex-wrap justify-content-between small text-muted mb-2">
+                        <span id="periodo-aplicado"></span>
+                        <span id="estado-consulta"></span>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-6 col-xl-3">
+                            <article class="card">
+                                <div class="card-body">
+                                    <p class="text-muted mb-1">Faturamento líquido</p>
+                                    <h2 class="h4 mb-1" id="kpi-faturamento">—</h2>
+                                    <small class="text-muted" id="kpi-descontos">—</small>
+                                </div>
+                            </article>
+                        </div>
+                        <div class="col-sm-6 col-xl-3">
+                            <article class="card">
+                                <div class="card-body">
+                                    <p class="text-muted mb-1">Pedidos no período</p>
+                                    <h2 class="h4 mb-1" id="kpi-pedidos">—</h2>
+                                    <small class="text-muted" id="kpi-finalizados">—</small>
+                                </div>
+                            </article>
+                        </div>
+                        <div class="col-sm-6 col-xl-3">
+                            <article class="card">
+                                <div class="card-body">
+                                    <p class="text-muted mb-1">Ticket médio</p>
+                                    <h2 class="h4 mb-1" id="kpi-ticket">—</h2>
+                                    <small class="text-muted">Por venda com total válido</small>
+                                </div>
+                            </article>
+                        </div>
+                        <div class="col-sm-6 col-xl-3">
+                            <article class="card">
+                                <div class="card-body">
+                                    <p class="text-muted mb-1">Em andamento</p>
+                                    <h2 class="h4 mb-1" id="kpi-andamento">—</h2>
+                                    <small class="text-muted" id="kpi-cancelamentos">—</small>
+                                </div>
+                            </article>
+                        </div>
+                    </div>
+
+                    <div id="periodo-vazio" class="alert alert-light border" role="status" hidden>Nenhum pedido no período selecionado.</div>
+
+                    <div class="row">
+                        <div class="col-lg-8">
+                            <section class="card">
+                                <div class="card-header"><h2 class="card-title">Vendas por dia</h2></div>
+                                <div class="card-body">
+                                    <div class="sales-chart">
+                                        <canvas id="grafico-vendas" role="img" aria-label="Faturamento e quantidade de vendas por dia. Consulte a tabela para ver os valores."></canvas>
+                                    </div>
+                                    <details class="mt-3">
+                                        <summary>Consultar valores por dia</summary>
+                                        <div class="table-responsive daily-table mt-2">
+                                            <table class="table table-sm mb-0">
+                                                <caption class="sr-only">Faturamento líquido e vendas por data de entrada</caption>
+                                                <thead><tr><th scope="col">Dia</th><th scope="col">Vendas válidas</th><th scope="col" class="text-right">Faturamento líquido</th></tr></thead>
+                                                <tbody id="tabela-vendas"></tbody>
+                                            </table>
+                                        </div>
+                                    </details>
+                                </div>
+                            </section>
+                        </div>
+                        <div class="col-lg-4">
+                            <section class="card">
+                                <div class="card-header"><h2 class="card-title">Pedidos por status</h2></div>
+                                <div class="card-body">
+                                    <div class="status-chart">
+                                        <canvas id="grafico-status" role="img" aria-label="Pedidos por status. Quantidades listadas abaixo."></canvas>
+                                        <p id="status-sem-dados" class="text-muted text-center pt-5" hidden>Sem pedidos no período.</p>
+                                    </div>
+                                    <ul id="lista-status" class="list-unstyled status-legend small mb-0 mt-3" aria-label="Quantidade por status"></ul>
+                                </div>
+                            </section>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <section class="card">
+                                <div class="card-header"><h2 class="card-title">Produtos mais vendidos</h2></div>
+                                <div class="table-responsive">
+                                    <table class="table table-sm table-hover mb-0">
+                                        <caption class="px-3">Até 10 produtos em pedidos finalizados. Valores antes dos descontos.</caption>
+                                        <thead><tr><th scope="col">#</th><th scope="col">Produto</th><th scope="col" class="text-right">Unidades</th><th scope="col" class="text-right">Valor bruto</th></tr></thead>
+                                        <tbody id="ranking-produtos"></tbody>
+                                    </table>
+                                </div>
+                            </section>
+                        </div>
+                        <div class="col-lg-6">
+                            <section class="card">
+                                <div class="card-header">
+                                    <h2 class="card-title">Pedidos recentes</h2>
+                                    <a class="card-tools small mr-0" th:href="@{/pedidos}">Ver pedidos</a>
+                                </div>
+                                <div class="table-responsive">
+                                    <table class="table table-sm table-hover mb-0">
+                                        <caption class="px-3">Até 8 pedidos do período selecionado.</caption>
+                                        <thead><tr><th scope="col">Pedido</th><th scope="col">Entrada</th><th scope="col">Status</th><th scope="col" class="text-right">Total</th></tr></thead>
+                                        <tbody id="pedidos-recentes"></tbody>
+                                    </table>
+                                </div>
+                            </section>
+                        </div>
+                    </div>
+                    <p class="small text-muted mb-0 pb-3">O período considera a data de entrada. Pedidos sem essa data ficam fora da consulta.</p>
+                </div>
+            </div>
+        </section>
+    </main>
+</div>
+<script th:src="@{/plugins/jquery/jquery.min.js}"></script>
+<script th:src="@{/plugins/bootstrap/js/bootstrap.bundle.min.js}"></script>
+<script th:src="@{/dist/js/adminlte.js}"></script>
+<script th:src="@{/plugins/chart.js/Chart.min.js}"></script>
+<script th:src="@{/js/dashboard.js}"></script>
+</body>
+</html>

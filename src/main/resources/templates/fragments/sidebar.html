@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"><body><div th:fragment="sidebar"><div id="sidebar">
+<h4 class="text-center py-3">Pediu Patrão</h4>
+<ul class="nav flex-column">
+<li><a class="nav-link" th:href="@{/}">Início</a></li>
+<li th:if="${#authorization.expression('hasAnyRole(''ADMIN'',''GERENTE'')')}"><a class="nav-link" th:href="@{/dashboard}">Dashboard</a></li>
+<li><a class="nav-link" th:href="@{/pedidos}">Pedidos</a></li>
+<li th:if="${!#authorization.expression('hasRole(''ADMIN'')')}"><a class="nav-link" th:href="@{/clientes}">Clientes</a></li>
+<li><a class="nav-link" th:href="@{/produtos}">Produtos</a></li>
+<li th:if="${#authorization.expression('hasRole(''ADMIN'')')}"><a class="nav-link" th:href="@{/usuarios}">Usuários</a></li>
+<li th:if="${#authorization.expression('hasAnyRole(''ADMIN'',''GERENTE'')')}"><a class="nav-link" th:href="@{/auditoria}">Auditoria</a></li>
+</ul>
+<form th:action="@{/logout}" method="post" class="p-3"><button class="btn btn-outline-light" type="submit">Sair</button></form>
+</div></div></body></html>
